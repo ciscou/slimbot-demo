@@ -1,16 +1,34 @@
 module.exports = {
   categories: [
     {
-      code: 'fruits_and_vegetables',
-      name: "🥬 Frutas y verduras",
+      code: 'fruits',
+      name: "🍎 Frutas",
+      items: [
+        {
+          code: 'apples',
+          name: "🍎 Manzanas",
+        },
+        {
+          code: 'grapes',
+          name: "🍇 Uvas",
+        },
+        {
+          code: 'banana',
+          name: "🍌 Plátanos",
+        },
+      ]
+    },
+    {
+      code: 'vegetables',
+      name: "🥬 Verduras",
       items: [
         {
           code: 'tomato',
           name: "🍅 Tomate",
         },
         {
-          code: 'banana',
-          name: "🍌 Plátanos",
+          code: 'lettuce',
+          name: "🥬 Lechuga",
         },
       ]
     },
