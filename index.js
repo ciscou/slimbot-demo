@@ -3,8 +3,7 @@ const process = require('process');
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot(process.env.SLIMBOT_TOKEN);
 
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('ciscoubot.sqlite');
+const repo = require('./repo');
 
 const buildTodoListReplyMarkup = (items) => {
   return JSON.stringify({
@@ -44,22 +43,20 @@ const todoList = chatId => {
     }
   }
 
-  db.all("SELECT * FROM todos WHERE chat_id=? ORDER BY created_at", [chatId], cb);
+  repo.getAllTodoItems(chatId, cb);
 }
 
-const todoAdd = (chatId, item) => {
+const todoAdd = (chatId, name) => {
   const cb = (error) => {
     if(error) {
       console.log(error);
       return;
     }
 
-    slimbot.sendMessage(chatId, `Done! ${item} has been added to the list`);
+    slimbot.sendMessage(chatId, `Done! ${name} has been added to the list`);
   }
 
-  const now = new Date().getTime();
-
-  db.run("INSERT INTO todos (chat_id, done, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", [chatId, 0, item, now, now], cb);
+  repo.createTodoItem(chatId, name, cb);
 }
 
 const markTodoItemAs = (chatId, messageId, itemId, done) => {
@@ -78,10 +75,10 @@ const markTodoItemAs = (chatId, messageId, itemId, done) => {
       return;
     }
 
-    db.all("SELECT * FROM todos WHERE chat_id=? ORDER BY created_at", [chatId], cb1);
+    repo.getAllTodoItems(chatId, cb1);
   }
 
-  db.run("UPDATE todos SET done=?, updated_at=? WHERE chat_id=? and id=?", [done ? 1 : 0, new Date().getTime(), chatId, itemId], cb2);
+  repo.markTodoItemAs(chatId, itemId, done, cb2);
 }
 
 slimbot.on('message', message => {
@@ -105,7 +102,7 @@ slimbot.on('message', message => {
       slimbot.sendMessage(message.chat.id, "Done items have been cleared! 🎉");
     }
 
-    db.run("DELETE FROM todos WHERE chat_id=? AND done=?", [message.chat.id, 0], cb);
+    repo.clearDoneTodoItems(message.chat.id, cb);
   }
 
   if(message.text.startsWith("/todo add ")) {
@@ -203,7 +200,7 @@ process.on('SIGINT', () => {
   console.log("Processing signal...");
   slimbot.close(() => {
     console.log("closed slimbot");
-    db.close(() => {
+    repo.closeDb(() => {
       console.log("closed db");
       process.exit();
     });
