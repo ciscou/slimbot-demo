@@ -132,14 +132,7 @@ slimbot.on('callback_query', query => {
   }
 
   if(query.data === "todo") {
-    const replyMarkup = JSON.stringify({
-      inline_keyboard: [
-        [{ text: '📋 List', callback_data: 'todo:list' }],
-        [{ text: '➕ Add', callback_data: 'todo:add' }],
-      ]
-    });
-
-    slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
+    todo(message.chat.id);
   }
 
   if(query.data === "todo:add") {
