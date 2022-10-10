@@ -23,8 +23,9 @@ const buildTodoListReplyMarkup = (items) => {
 const todo = chatId => {
   const replyMarkup = JSON.stringify({
     inline_keyboard: [
-      [{ text: '📋 List', callback_data: 'todo:list' }],
-      [{ text: '➕ Add', callback_data: 'todo:add' }],
+      [{ text: "📋 List", callback_data: 'todo:list' }],
+      [{ text: "🧹 Clear", callback_data: 'todo:clear' }],
+      [{ text: "➕ Add", callback_data: 'todo:add' }],
     ]
   });
 
@@ -46,6 +47,19 @@ const todoList = chatId => {
   }
 
   repo.getAllTodoItems(chatId, cb);
+}
+
+const todoClear = chatId => {
+  const cb = (error, items) => {
+    if(error) {
+      console.log(error);
+      return;
+    }
+
+    slimbot.sendMessage(chatId, "Done items have been cleared! 🎉");
+  }
+
+  repo.clearDoneTodoItems(chatId, cb);
 }
 
 const todoAdd = (chatId, name) => {
@@ -95,16 +109,7 @@ slimbot.on('message', message => {
   }
 
   if(message.text === "/todo clear") {
-    const cb = (error, items) => {
-      if(error) {
-        console.log(error);
-        return;
-      }
-
-      slimbot.sendMessage(message.chat.id, "Done items have been cleared! 🎉");
-    }
-
-    repo.clearDoneTodoItems(message.chat.id, cb);
+    todoClear(message.chat.id);
   }
 
   if(message.text.startsWith("/todo add ")) {
@@ -120,6 +125,10 @@ slimbot.on('callback_query', query => {
   if(query.data === "todo:list") {
     // slimbot.deleteMessage(message.chat.id, message.message_id);
     todoList(message.chat.id);
+  }
+
+  if(query.data === "todo:clear") {
+    todoClear(message.chat.id);
   }
 
   if(query.data === "todo") {
