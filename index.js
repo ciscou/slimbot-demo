@@ -20,7 +20,7 @@ const buildTodoListReplyMarkup = (items) => {
   });
 }
 
-const todo = chatId => {
+const todo = (chatId, messageId) => {
   const replyMarkup = JSON.stringify({
     inline_keyboard: [
       [{ text: "📋 List", callback_data: 'todo:list' }],
@@ -29,7 +29,11 @@ const todo = chatId => {
     ]
   });
 
-  slimbot.sendMessage(chatId, "Choose an option", { reply_markup: replyMarkup });
+  if(messageId) {
+    slimbot.editMessageReplyMarkup(chatId, messageId, replyMarkup);
+  } else {
+    slimbot.sendMessage(chatId, "Choose an option", { reply_markup: replyMarkup });
+  }
 }
 
 const todoList = chatId => {
@@ -130,7 +134,7 @@ slimbot.on('callback_query', query => {
   }
 
   if(query.data === "todo") {
-    todo(message.chat.id);
+    todo(message.chat.id, message.message_id);
     slimbot.answerCallbackQuery(query.id);
   }
 
