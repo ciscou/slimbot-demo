@@ -55,8 +55,6 @@ const todoClear = chatId => {
       console.log(error);
       return;
     }
-
-    slimbot.sendMessage(chatId, "Done items have been cleared! 🎉");
   }
 
   repo.clearDoneTodoItems(chatId, cb);
@@ -68,8 +66,6 @@ const todoAdd = (chatId, name) => {
       console.log(error);
       return;
     }
-
-    slimbot.sendMessage(chatId, `Done! ${name} has been added to the list`);
   }
 
   repo.createTodoItem(chatId, name, cb);
@@ -125,14 +121,17 @@ slimbot.on('callback_query', query => {
   if(query.data === "todo:list") {
     // slimbot.deleteMessage(message.chat.id, message.message_id);
     todoList(message.chat.id);
+    slimbot.answerCallbackQuery(query.id);
   }
 
   if(query.data === "todo:clear") {
     todoClear(message.chat.id);
+    slimbot.answerCallbackQuery(query.id, { text: "Done items have been cleared! 🎉" });
   }
 
   if(query.data === "todo") {
     todo(message.chat.id);
+    slimbot.answerCallbackQuery(query.id);
   }
 
   if(query.data === "todo:add") {
@@ -147,6 +146,7 @@ slimbot.on('callback_query', query => {
     });
 
     slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
+    slimbot.answerCallbackQuery(query.id);
   }
 
   shoppingListMenu.categories.forEach(category => {
@@ -162,11 +162,13 @@ slimbot.on('callback_query', query => {
       });
 
       slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
+      slimbot.answerCallbackQuery(query.id);
     }
 
     category.items.forEach(item => {
       if(query.data === `todo:add:item:${category.code}:${item.code}`) {
         todoAdd(message.chat.id, item.name)
+        slimbot.answerCallbackQuery(query.id, { text: `Done! ${item.name} has been added to the list` });
       }
     });
   });
