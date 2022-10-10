@@ -17,5 +17,5 @@ $ npm i
 ## Run
 
 ```bash
-$ node index.js
+$ SLIMBOT_TOKEN=XXXX node index.js
 ```
