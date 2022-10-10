@@ -5,6 +5,8 @@ const slimbot = new Slimbot(process.env.SLIMBOT_TOKEN);
 
 const repo = require('./repo');
 
+const shoppingListMenu = require('./shopping_list_menu');
+
 const buildTodoListReplyMarkup = (items) => {
   return JSON.stringify({
     inline_keyboard: items.map((item, index) => {
@@ -132,56 +134,42 @@ slimbot.on('callback_query', query => {
   }
 
   if(query.data === "todo:add") {
+    const inlineKeyboard = shoppingListMenu.categories.map(category => {
+      return [{ text: category.name, callback_data: `todo:add:category:${category.code}` }];
+    });
+
+    inlineKeyboard.push([{ text: "⬅️ Back", callback_data: 'todo' }]);
+
     const replyMarkup = JSON.stringify({
-      inline_keyboard: [
-        [{ text: '🥬 frutas y verduras', callback_data: 'todo:add:category:fruits_and_vegetables' }],
-        [{ text: '🍗 carne y pescado', callback_data: 'todo:add:category:meat_and_fish' }],
-        [{ text: '⬅️ back', callback_data: 'todo' }],
-      ]
+      inline_keyboard: inlineKeyboard
     });
 
     slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
   }
 
-  if(query.data === "todo:add:category:fruits_and_vegetables") {
-    const replyMarkup = JSON.stringify({
-      inline_keyboard: [
-        [{ text: '🍅 Tomate', callback_data: 'todo:add:item:tomato' }],
-        [{ text: '🍌 Plátano', callback_data: 'todo:add:item:banana' }],
-        [{ text: '⬅️ back', callback_data: 'todo:add' }],
-      ]
+  shoppingListMenu.categories.forEach(category => {
+    if(query.data === `todo:add:category:${category.code}`) {
+      console.log(query.data, category);
+
+      const inlineKeyboard = category.items.map(item => {
+        return [{ text: item.name, callback_data: `todo:add:item:${category.code}:${item.code}` }];
+      });
+
+      inlineKeyboard.push([{ text: "⬅️ Back", callback_data: 'todo:add' }]);
+
+      const replyMarkup = JSON.stringify({
+        inline_keyboard: inlineKeyboard
+      });
+
+      slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
+    }
+
+    category.items.forEach(item => {
+      if(query.data === `todo:add:item:${category.code}:${item.code}`) {
+        todoAdd(message.chat.id, item.name)
+      }
     });
-
-    slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
-  }
-
-  if(query.data === "todo:add:category:meat_and_fish") {
-    const replyMarkup = JSON.stringify({
-      inline_keyboard: [
-        [{ text: '🍗 pollo', callback_data: 'todo:add:item:chicken' }],
-        [{ text: '🐟 lubina', callback_data: 'todo:add:item:seabass' }],
-        [{ text: '⬅️ back', callback_data: 'todo:add' }],
-      ]
-    });
-
-    slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
-  }
-
-  if(query.data === "todo:add:item:tomato") {
-    todoAdd(message.chat.id, "Tomate")
-  }
-
-  if(query.data === "todo:add:item:banana") {
-    todoAdd(message.chat.id, "Platanos")
-  }
-
-  if(query.data === "todo:add:item:chicken") {
-    todoAdd(message.chat.id, "Pollo")
-  }
-
-  if(query.data === "todo:add:item:seabass") {
-    todoAdd(message.chat.id, "Lubina")
-  }
+  });
 
   if(query.data.startsWith('todo:done:')) {
     const itemId = parseInt(query.data.slice(10));
