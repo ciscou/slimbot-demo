@@ -158,8 +158,6 @@ slimbot.on('callback_query', query => {
 
   shoppingListMenu.categories.forEach(category => {
     if(query.data === `todo:add:category:${category.code}`) {
-      console.log(query.data, category);
-
       const inlineKeyboard = category.items.map(item => {
         return [{ text: item.name, callback_data: `todo:add:item:${category.code}:${item.code}` }];
       });
