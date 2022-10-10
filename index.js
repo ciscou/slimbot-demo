@@ -175,12 +175,14 @@ slimbot.on('callback_query', query => {
     const itemId = parseInt(query.data.slice(10));
 
     markTodoItemAs(message.chat.id, message.message_id, itemId, true);
+    slimbot.answerCallbackQuery(query.id);
   }
 
   if(query.data.startsWith('todo:todo:')) {
     const itemId = parseInt(query.data.slice(10));
 
     markTodoItemAs(message.chat.id, message.message_id, itemId, false);
+    slimbot.answerCallbackQuery(query.id);
   }
 });
 
