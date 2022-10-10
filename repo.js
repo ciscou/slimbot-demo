@@ -19,7 +19,7 @@ repo = {
   },
 
   clearDoneTodoItems: (chatId, cb) => {
-    db.run("DELETE FROM todos WHERE chat_id=? AND done=?", [chatId, 0], cb);
+    db.run("DELETE FROM todos WHERE chat_id=? AND done=?", [chatId, 1], cb);
   },
 
   closeDb: (cb) => {
