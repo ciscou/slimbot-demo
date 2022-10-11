@@ -9,7 +9,7 @@ const shoppingListMenu = require('./shopping_list_menu');
 
 const buildTodoListReplyMarkup = (items) => {
   return JSON.stringify({
-    inline_keyboard: items.map((item, index) => {
+    inline_keyboard: items.map(item => {
       return [
         {
           text: [item.done ? "✅" : "❌", item.name].join(" "),
