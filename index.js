@@ -7,6 +7,8 @@ const repo = require('./repo');
 
 const shoppingListMenu = require('./shopping_list_menu');
 
+const match = require('./match');
+
 const buildTodoListReplyMarkup = (items) => {
   return JSON.stringify({
     inline_keyboard: items.map(item => {
@@ -119,36 +121,42 @@ slimbot.on('callback_query', query => {
 
   const message = query.message;
 
-  if(query.data === "todo:list") {
-    // slimbot.deleteMessage(message.chat.id, message.message_id);
-    todoList(message.chat.id);
-    slimbot.answerCallbackQuery(query.id);
-  }
+  match(query.data.split(':'), [
+    [['todo'], () => {
+      todo(message.chat.id, message.message_id);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+    [['todo', 'list'], () => {
+      todoList(message.chat.id);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+    [['todo', 'clear'], () => {
+      todoClear(message.chat.id);
+      slimbot.answerCallbackQuery(query.id, { text: "Done items have been cleared! 🎉" });
+    }],
+    [['todo', 'add'], () => {
+      const inlineKeyboard = shoppingListMenu.categories.map(category => {
+        return [{ text: category.name, callback_data: `todo:add:category:${category.code}` }];
+      });
 
-  if(query.data === "todo:clear") {
-    todoClear(message.chat.id);
-    slimbot.answerCallbackQuery(query.id, { text: "Done items have been cleared! 🎉" });
-  }
+      inlineKeyboard.push([{ text: "⬅️ Back", callback_data: 'todo' }]);
 
-  if(query.data === "todo") {
-    todo(message.chat.id, message.message_id);
-    slimbot.answerCallbackQuery(query.id);
-  }
+      const replyMarkup = JSON.stringify({
+        inline_keyboard: inlineKeyboard
+      });
 
-  if(query.data === "todo:add") {
-    const inlineKeyboard = shoppingListMenu.categories.map(category => {
-      return [{ text: category.name, callback_data: `todo:add:category:${category.code}` }];
-    });
-
-    inlineKeyboard.push([{ text: "⬅️ Back", callback_data: 'todo' }]);
-
-    const replyMarkup = JSON.stringify({
-      inline_keyboard: inlineKeyboard
-    });
-
-    slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
-    slimbot.answerCallbackQuery(query.id);
-  }
+      slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+    [['todo', 'done', Number], (itemId) => {
+      markTodoItemAs(message.chat.id, message.message_id, itemId, true);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+    [['todo', 'todo', Number], (itemId) => {
+      markTodoItemAs(message.chat.id, message.message_id, itemId, false);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+  ]);
 
   shoppingListMenu.categories.forEach(category => {
     if(query.data === `todo:add:category:${category.code}`) {
@@ -173,20 +181,6 @@ slimbot.on('callback_query', query => {
       }
     });
   });
-
-  if(query.data.startsWith('todo:done:')) {
-    const itemId = parseInt(query.data.slice(10));
-
-    markTodoItemAs(message.chat.id, message.message_id, itemId, true);
-    slimbot.answerCallbackQuery(query.id);
-  }
-
-  if(query.data.startsWith('todo:todo:')) {
-    const itemId = parseInt(query.data.slice(10));
-
-    markTodoItemAs(message.chat.id, message.message_id, itemId, false);
-    slimbot.answerCallbackQuery(query.id);
-  }
 });
 
 process.on('SIGINT', () => {
