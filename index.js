@@ -36,7 +36,7 @@ const todo = (chatId, messageId) => {
   }
 }
 
-const todoList = chatId => {
+const todoList = (chatId, messageId) => {
   const cb = (error, items) => {
     if(error) {
       console.log(error);
@@ -44,7 +44,13 @@ const todoList = chatId => {
     }
 
     if(items.length > 0) {
-      slimbot.sendMessage(chatId, "Your TODO list", { reply_markup: buildTodoListReplyMarkup(items) });
+      const replyMarkup = buildTodoListReplyMarkup(items);
+
+      if(messageId) {
+        slimbot.editMessageReplyMarkup(chatId, messageId, replyMarkup);
+      } else {
+        slimbot.sendMessage(chatId, "Your TODO list", { reply_markup: replyMarkup });
+      }
     } else {
       slimbot.sendMessage(chatId, "Nothing TODO! 🎉");
     }
@@ -76,25 +82,16 @@ const todoAdd = (chatId, name) => {
 }
 
 const markTodoItemAs = (chatId, messageId, itemId, done) => {
-  const cb1 = (error, items) => {
+  const cb = (error, items) => {
     if(error) {
       console.log(error);
       return;
     }
 
-    slimbot.editMessageReplyMarkup(chatId, messageId, buildTodoListReplyMarkup(items));
+    todoList(chatId, messageId);
   }
 
-  const cb2 = (error, items) => {
-    if(error) {
-      console.log(error);
-      return;
-    }
-
-    repo.getAllTodoItems(chatId, cb1);
-  }
-
-  repo.markTodoItemAs(chatId, itemId, done, cb2);
+  repo.markTodoItemAs(chatId, itemId, done, cb);
 }
 
 slimbot.on('message', message => {
