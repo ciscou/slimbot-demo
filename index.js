@@ -148,18 +148,9 @@ slimbot.on('callback_query', query => {
       slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
       slimbot.answerCallbackQuery(query.id);
     }],
-    [['todo', 'done', Number], (itemId) => {
-      markTodoItemAs(message.chat.id, message.message_id, itemId, true);
-      slimbot.answerCallbackQuery(query.id);
-    }],
-    [['todo', 'todo', Number], (itemId) => {
-      markTodoItemAs(message.chat.id, message.message_id, itemId, false);
-      slimbot.answerCallbackQuery(query.id);
-    }],
-  ]);
+    [['todo', 'add', 'category', String], (categoryCode) => {
+      const category = shoppingListMenu.categoriesByCode[categoryCode];
 
-  shoppingListMenu.categories.forEach(category => {
-    if(query.data === `todo:add:category:${category.code}`) {
       const inlineKeyboard = category.items.map(item => {
         return [{ text: item.name, callback_data: `todo:add:item:${category.code}:${item.code}` }];
       });
@@ -172,15 +163,23 @@ slimbot.on('callback_query', query => {
 
       slimbot.editMessageReplyMarkup(message.chat.id, message.message_id, replyMarkup);
       slimbot.answerCallbackQuery(query.id);
-    }
+    }],
+    [['todo', 'add', 'item', String, String], (categoryCode, itemCode) => {
+      const category = shoppingListMenu.categoriesByCode[categoryCode];
+      const item = category.itemsByCode[itemCode];
 
-    category.items.forEach(item => {
-      if(query.data === `todo:add:item:${category.code}:${item.code}`) {
-        todoAdd(message.chat.id, item.name)
-        slimbot.answerCallbackQuery(query.id, { text: `Done! ${item.name} has been added to the list` });
-      }
-    });
-  });
+      todoAdd(message.chat.id, item.name)
+      slimbot.answerCallbackQuery(query.id, { text: `Done! ${item.name} has been added to the list` });
+    }],
+    [['todo', 'done', Number], (itemId) => {
+      markTodoItemAs(message.chat.id, message.message_id, itemId, true);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+    [['todo', 'todo', Number], (itemId) => {
+      markTodoItemAs(message.chat.id, message.message_id, itemId, false);
+      slimbot.answerCallbackQuery(query.id);
+    }],
+  ]);
 });
 
 process.on('SIGINT', () => {
