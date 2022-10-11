@@ -1,4 +1,6 @@
 const match = (actual, options) => {
+  let matched;
+
   options.forEach(([pattern, callback]) => {
     if(Array.isArray(actual) && Array.isArray(pattern)) {
       if(actual.length === pattern.length) {
@@ -16,38 +18,15 @@ const match = (actual, options) => {
         });
 
         if(matches) {
+          matched = pattern;
           callback(...args);
           return;
         }
       }
     }
   });
-};
 
-/*
-[
-  'todo',
-  'xxx',
-  'xxx:yyy:zzz',
-  'todo:done:1234',
-  'todo:add:category:foo',
-  'todo:add:item:foo:bar',
-].forEach(data => {
-  match(data.split(":"), [
-    [['todo'], () => {
-      console.log('todo');
-    }],
-    [['todo', 'add', 'category', String], (categoryCode) => {
-      console.log('add category', categoryCode);
-    }],
-    [['todo', 'add', 'item', String, String], (categoryCode, itemCode) => {
-      console.log('add item', categoryCode, itemCode);
-    }],
-    [['todo', 'done', Number], (todoId) => {
-      console.log('mark as done', todoId);
-    }],
-  ]);
-});
-*/
+  return matched;
+};
 
 module.exports = match;
