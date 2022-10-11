@@ -121,7 +121,7 @@ slimbot.on('callback_query', query => {
 
   const message = query.message;
 
-  const matched = match(query.data.split(':'), [
+  match(query.data.split(':'), [
     [['todo'], () => {
       todo(message.chat.id, message.message_id);
       slimbot.answerCallbackQuery(query.id);
@@ -180,8 +180,6 @@ slimbot.on('callback_query', query => {
       slimbot.answerCallbackQuery(query.id);
     }],
   ]);
-
-  console.log('matched', matched);
 });
 
 process.on('SIGINT', () => {
