@@ -99,7 +99,9 @@ const markTodoItemAs = (chatId, messageId, itemId, done) => {
 slimbot.on('message', message => {
   if(!message.text) return;
 
-  if(message.text === "/todo") {
+  message.text.replace(/^\/todo@CiscouBot /, "/todo ")
+
+  if(message.text === "/todo" || message.text === "/todo@CiscouBot") {
     todo(message.chat.id);
   }
 
