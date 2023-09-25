@@ -9,6 +9,8 @@ const shoppingListMenu = require('./shopping_list_menu');
 
 const match = require('./match');
 
+const listening = {};
+
 const buildTodoListReplyMarkup = (items) => {
   return JSON.stringify({
     inline_keyboard: items.map(item => {
@@ -72,6 +74,19 @@ const todoClear = chatId => {
   repo.clearDoneTodoItems(chatId, cb);
 }
 
+const todoListStart = chatId => {
+  listening[chatId] = true;
+
+  slimbot.sendMessage(chatId, "Everything you write below will be added to the TODO list");
+  slimbot.sendMessage(chatId, "Write \"/todo listen stop\" to stop listening!");
+}
+
+const todoListStop = chatId => {
+  delete listening[chatId];
+
+  slimbot.sendMessage(chatId, "Not listening anymore!");
+}
+
 const todoAdd = (chatId, name) => {
   const cb = (error) => {
     if(error) {
@@ -113,8 +128,20 @@ slimbot.on('message', message => {
     todoClear(message.chat.id);
   }
 
+  if(message.text === "/todo listen start") {
+    todoListStart(message.chat.id);
+  }
+
+  if(message.text === "/todo listen stop") {
+    todoListStop(message.chat.id);
+  }
+
   if(message.text.startsWith("/todo add ")) {
     todoAdd(message.chat.id, message.text.slice(10));
+  }
+
+  if(listening[message.chat.id] && !message.text.startsWith("/todo listen ")) {
+    todoAdd(message.chat.id, message.text);
   }
 });
 
