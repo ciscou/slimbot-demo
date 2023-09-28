@@ -141,7 +141,8 @@ slimbot.on('message', message => {
   }
 
   if(listening[message.chat.id] && !message.text.startsWith("/todo listen ")) {
-    todoAdd(message.chat.id, message.text);
+    const lines = message.text.split("\n").filter(s => s !== "");
+    lines.forEach(line => todoAdd(message.chat.id, line));
   }
 });
 
